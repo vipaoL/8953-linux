@@ -2,20 +2,55 @@
 
 /dts-v1/;
 
-#include "msm8953-pm8953.dtsi"
+#include "msm8953.dtsi"
+#include "pm8953.dtsi"
 #include "pmi8950.dtsi"
-#include <dt-bindings/leds/common.h>
+
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/leds/common.h>
+
+/delete-node/ &adsp_fw_mem;
+/delete-node/ &wcnss_fw_mem;
 
 / {
 	model = "Xiaomi Redmi 5 Plus";
 	compatible = "xiaomi,vince", "qcom,msm8953";
-
+	chassis-type = "handset";
 	qcom,msm-id = <293 0>;
-	qcom,board-id= <0x1000b 0x08>;
+	qcom,board-id = <0x1000b 0x08>;
 
-	aliases {
-		panel = &panel;
+	battery: battery {
+		compatible = "simple-battery";
+		charge-full-design-microamp-hours = <4000000>;
+		voltage-min-design-microvolt = <3400000>;
+		voltage-max-design-microvolt = <4380000>;
+	};
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		framebuffer0: framebuffer@90001000 {
+			compatible = "simple-framebuffer";
+			reg = <0x0 0x90001000 0 (1080 * 2160 * 3)>;
+
+			width = <1080>;
+			height = <2160>;
+			stride = <(1080 * 3)>;
+			format = "r8g8b8";
+
+			power-domains = <&gcc MDSS_GDSC>;
+
+			clocks = <&gcc GCC_MDSS_AHB_CLK>,
+			         <&gcc GCC_MDSS_AXI_CLK>,
+			         <&gcc GCC_MDSS_VSYNC_CLK>,
+			         <&gcc GCC_MDSS_MDP_CLK>,
+			         <&gcc GCC_MDSS_BYTE0_CLK>,
+			         <&gcc GCC_MDSS_PCLK0_CLK>,
+			         <&gcc GCC_MDSS_ESC0_CLK>;
+		};
 	};
 
 	gpio-keys {
@@ -24,56 +59,109 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&gpio_key_default>;
 
-		label = "GPIO Button";
-
-		volume-up {
-			label = "Volume Up";
-			gpios = <&tlmm 85 GPIO_ACTIVE_LOW>;
+		key-volume-up {
+			label = "volume_up";
 			linux,code = <KEY_VOLUMEUP>;
+			gpios = <&tlmm 85 GPIO_ACTIVE_LOW>;
 		};
 	};
 
 	reserved-memory {
-		/delete-node/ memory@85b00000;
-		memory@84A00000 {
+		qseecom_mem: qseecom@84a00000 {
+			reg = <0x0 0x84a00000 0x0 0x1900000>;
 			no-map;
-			reg = <0x0 0x84A00000 0x0 0x1900000>;
 		};
 
-		/delete-node/ memory@8d600000;
-		adsp_fw_mem: memory@8d600000 { // 0x8d600000 - 0x8e800000
+		cont_splash_mem: cont-splash@90001000 {
+			reg = <0x0 0x90001000 0x0 (1080 * 2160 * 3)>;
+			no-map;
+		};
+
+		adsp_fw_mem: adsp@8d600000 {
 			reg = <0x0 0x8d600000 0x0 0x1200000>;
 			no-map;
 		};
 
-		/delete-node/ memory@8e700000;
-		wcnss_fw_mem: memory@8e800000 { // 0x8e800000 - 0x8ef00000
+		wcnss_fw_mem: wcnss@8e800000 {
 			reg = <0x0 0x8e800000 0x0 0x700000>;
 			no-map;
 		};
 
 		ramoops@9ff00000 {
 			compatible = "ramoops";
-			reg = <0x0 0x9ff00000 0x0 0x00100000>;
+			reg = <0x0 0x9ff00000 0x0 0x100000>;
 			record-size = <0x1000>;
 			console-size = <0x80000>;
 			ftrace-size = <0x1000>;
 			pmsg-size = <0x8000>;
 		};
 	};
+
+	/*
+	 * We bitbang on &i2c_4 because BLSP is protected by TZ as sensors are
+	 * normally proxied via ADSP firmware. GPIOs aren't protected.
+	 */
+	i2c-sensors {
+		compatible = "i2c-gpio";
+		sda-gpios = <&tlmm 14 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN)>;
+		scl-gpios = <&tlmm 15 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN)>;
+		i2c-gpio,delay-us = <2>; /* ~100 kHz */
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/*
+		magnetometer@c {
+			compatible = "asahi-kasei,ak09918";
+			reg = <0x0c>;
+		};
+
+		light-sensor@53 {
+			reg = <0x53>;
+		};
+		 */
+
+		imu@6a {
+			compatible = "st,lsm6dsl";
+			reg = <0x6a>;
+			vdd-supply = <&pm8953_l10>;
+			vddio-supply = <&pm8953_l6>;
+			mount-matrix = "-1", "0", "0",
+					"0", "-1", "0",
+					"0", "0", "1";
+		};
+	};
+
+	vph_pwr: vph-pwr-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vph_pwr";
+		regulator-always-on;
+		regulator-boot-on;
+	};
+};
+
+&cpr {
+	vdd-apc-supply = <&vreg_apc>;
+	vdd-apc-step-uv = <5000>;
 };
 
 &dsi0 {
+	vdda-supply = <&pm8953_s3>;
+	vddio-supply = <&pm8953_l6>;
+
 	panel: panel@0 {
 		compatible = "xiaomi,vince-panel";
 		reg = <0>;
 
 		backlight = <&pmi8950_wled>;
+
 		reset-gpios = <&tlmm 61 GPIO_ACTIVE_LOW>;
 
 		pinctrl-names = "default", "sleep";
 		pinctrl-0 = <&pmx_mdss_default &mdss_te_default>;
 		pinctrl-1 = <&pmx_mdss_sleep &mdss_te_default>;
+
+		vsp-supply = <&lab_vreg>;
+		vsn-supply = <&ibb_vreg>;
 
 		port {
 			panel_in: endpoint {
@@ -88,12 +176,27 @@
 	remote-endpoint = <&panel_in>;
 };
 
+&dsi_phy0 {
+	vcca-supply = <&pm8953_l3>;
+};
+
 &hsusb_phy {
+	vdd-supply = <&pm8953_l3>;
+	vdda-pll-supply = <&pm8953_l7>;
+	vdda-phy-dpdm-supply = <&pm8953_l13>;
+
 	status = "okay";
 };
 
 &i2c_2 {
 	status = "okay";
+
+	/*
+	speaker_codec: tas2557@4c {
+		compatible = "ti,tas2557";
+		reg = <0x4c>;
+	};
+	 */
 
 	led-controller@45 {
 		compatible = "awinic,aw2013";
@@ -120,36 +223,210 @@
 		reg = <0x20>;
 		compatible = "syna,rmi4-i2c";
 		interrupts-parent = <&tlmm>;
-		interrupts-extended = <&tlmm 65 0x2008>;
+		interrupts-extended = <&tlmm 65 IRQ_TYPE_EDGE_FALLING>;
 
 		#address-cells = <1>;
 		#size-cells = <0>;
 
 		vdd-supply = <&pm8953_l10>;
 		vio-supply = <&pm8953_l6>;
-		gpios = <&tlmm 65 0x2008>,
-			<&tlmm 64 GPIO_ACTIVE_HIGH>;
 
 		pinctrl-names = "init", "suspend";
 		pinctrl-0 = <&ts_reset_active &ts_int_active>;
 		pinctrl-1 = <&ts_reset_suspend &ts_int_suspend>;
 		syna,reset-delay-ms = <200>;
 		syna,startup-delay-ms = <500>;
+
+		rmi4-f01@1 {
+			reg = <0x01>;
+			syna,nosleep-mode = <1>;
+		};
+
+		rmi4-f12@12 {
+			reg = <0x12>;
+			syna,rezero-wait-ms = <20>;
+			syna,sensor-type = <1>;
+			touchscreen-x-mm = <68>;
+			touchscreen-y-mm = <122>;
+		};
 	};
 };
 
-&pm8953_resin {
+&iris {
+	vddxo-supply = <&pm8953_l7>;
+	vddrfa-supply = <&pm8953_l19>;
+	vddpa-supply = <&pm8953_l9>;
+	vdddig-supply = <&pm8953_l5>;
+};
+
+&lpass {
 	status = "okay";
+};
+
+&modem {
+	mss-supply = <&pm8953_s1>;
+	pll-supply = <&pm8953_l7>;
+	status = "okay";
+};
+
+&pm8953_resin {
 	linux,code = <KEY_VOLUMEDOWN>;
+	status = "okay";
+};
+
+&pmi8950_fg {
+	monitored-battery = <&battery>;
+};
+
+&pmi8950_smbcharger {
+	monitored-battery = <&battery>;
+
+	status = "okay";
 };
 
 &pmi8950_wled {
-	status = "okay";
-	// qcom,current-boost-limit = <980>; // value from donwstream, but not working
-	// qcom,ovp-millivolt = <29500>; // value from donwstream, but not working
-	qcom,enabled-strings = <0 1>;
+	qcom,current-limit-microamp = <20000>;
+	qcom,ovp-millivolt = <29600>;
 	qcom,num-strings = <2>;
+	qcom,external-pfet;
 	qcom,cabc;
+
+	status = "okay";
+};
+
+&pronto {
+	status = "okay";
+	vddpx-supply = <&pm8953_l5>;
+};
+
+&q6afedai {
+	dai@22 {
+		reg = <QUATERNARY_MI2S_RX>;
+		qcom,sd-lines = <0>;
+	};
+
+	dai@127 {
+		reg = <QUINARY_MI2S_RX>;
+		qcom,sd-lines = <0>;
+	};
+};
+
+&rpm_requests {
+	regulators {
+		compatible = "qcom,rpm-pm8953-regulators";
+		vdd_s1-supply = <&vph_pwr>;
+		vdd_s2-supply = <&vph_pwr>;
+		vdd_s3-supply = <&vph_pwr>;
+		vdd_s4-supply = <&vph_pwr>;
+		vdd_s5-supply = <&vph_pwr>;
+		vdd_s6-supply = <&vph_pwr>;
+		vdd_s7-supply = <&vph_pwr>;
+		vdd_l1-supply = <&pm8953_s3>;
+		vdd_l2_l3-supply = <&pm8953_s3>;
+		vdd_l4_l5_l6_l7_l16_l19-supply = <&pm8953_s4>;
+		vdd_l8_l11_l12_l13_l14_l15-supply = <&vph_pwr>;
+		vdd_l9_l10_l17_l18_l22-supply = <&vph_pwr>;
+
+		pm8953_s1: s1 {
+			regulator-min-microvolt = <870000>;
+			regulator-max-microvolt = <1156000>;
+		};
+
+		pm8953_s3: s3 {
+			regulator-min-microvolt = <984000>;
+			regulator-max-microvolt = <1224000>;
+		};
+
+		pm8953_s4: s4 {
+			regulator-min-microvolt = <1900000>;
+			regulator-max-microvolt = <2050000>;
+		};
+
+		pm8953_l1: l1 {
+			regulator-min-microvolt = <1000000>;
+			regulator-max-microvolt = <1100000>;
+		};
+
+		pm8953_l2: l2 {
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1225000>;
+		};
+
+		pm8953_l3: l3 {
+			regulator-min-microvolt = <925000>;
+			regulator-max-microvolt = <925000>;
+		};
+
+		pm8953_l5: l5 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8953_l6: l6 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8953_l7: l7 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1900000>;
+		};
+
+		pm8953_l8: l8 {
+			regulator-min-microvolt = <2900000>;
+			regulator-max-microvolt = <2900000>;
+		};
+
+		pm8953_l9: l9 {
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3300000>;
+		};
+
+		pm8953_l10: l10 {
+			regulator-min-microvolt = <2850000>;
+			regulator-max-microvolt = <2850000>;
+		};
+
+		pm8953_l11: l11 {
+			regulator-min-microvolt = <2950000>;
+			regulator-max-microvolt = <2950000>;
+		};
+
+		pm8953_l12: l12 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <2950000>;
+		};
+
+		pm8953_l13: l13 {
+			regulator-min-microvolt = <3125000>;
+			regulator-max-microvolt = <3125000>;
+		};
+
+		pm8953_l16: l16 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8953_l17: l17 {
+			regulator-min-microvolt = <2750000>;
+			regulator-max-microvolt = <2850000>;
+		};
+
+		pm8953_l19: l19 {
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1380000>;
+		};
+
+		pm8953_l22: l22 {
+			regulator-min-microvolt = <2800000>;
+			regulator-max-microvolt = <2800000>;
+		};
+
+		pm8953_l23: l23 {
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1225000>;
+		};
+	};
 };
 
 &sdhc_1 {
@@ -157,121 +434,31 @@
 };
 
 &sdhc_2 {
-	status = "okay";
+	vmmc-supply = <&pm8953_l11>;
+	vqmmc-supply = <&pm8953_l12>;
 
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
 	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
 
-	//cd-gpios = <&tlmm 133 GPIO_ACTIVE_LOW>;
+	status = "okay";
 };
 
-&smd_rpm_regulators {
-	s1 {
-		regulator-min-microvolt = <870000>;
-		regulator-max-microvolt = <1156000>;
-	};
 
-	s3 {
-		regulator-min-microvolt = <1224000>;
-		regulator-max-microvolt = <1224000>;
-	};
+&sound_card {
+	status = "okay";
 
-	s4 {
-		regulator-min-microvolt = <1900000>;
-		regulator-max-microvolt = <2050000>;
-	};
+	model = "xiaomi-vince";
 
-	l1 {
-		regulator-min-microvolt = <1000000>;
-		regulator-max-microvolt = <1100000>;
-	};
-
-	l2 {
-		regulator-min-microvolt = <1200000>;
-		regulator-max-microvolt = <1200000>;
-	};
-
-	l3 {
-		regulator-min-microvolt = <925000>;
-		regulator-max-microvolt = <925000>;
-	};
-
-	l5 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <1800000>;
-	};
-
-	l6 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <1800000>;
-	};
-
-	l7 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <1900000>;
-	};
-
-	l8 {
-		regulator-min-microvolt = <2900000>;
-		regulator-max-microvolt = <2900000>;
-	};
-
-	l9 {
-		regulator-min-microvolt = <3000000>;
-		regulator-max-microvolt = <3300000>;
-	};
-
-	l10 {
-		regulator-min-microvolt = <2850000>;
-		regulator-max-microvolt = <2850000>;
-	};
-
-	l11 {
-		regulator-min-microvolt = <2950000>;
-		regulator-max-microvolt = <2950000>;
-	};
-
-	l12 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <2950000>;
-	};
-
-	l13 {
-		regulator-min-microvolt = <3125000>;
-		regulator-max-microvolt = <3125000>;
-	};
-
-	l16 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <1800000>;
-	};
-
-	l17 {
-		regulator-min-microvolt = <2750000>;
-		regulator-max-microvolt = <2800000>;
-	};
-
-	l19 {
-		regulator-min-microvolt = <1200000>;
-		regulator-max-microvolt = <1380000>;
-	};
-
-	l22 {
-		regulator-min-microvolt = <2800000>;
-		regulator-max-microvolt = <2800000>;
-	};
-
-	l23 {
-		regulator-min-microvolt = <1200000>;
-		regulator-max-microvolt = <1225000>;
-	};
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act &cdc_pdm_comp_lines_act &pri_lines_default &pri_ws_lines_default>;
+	pinctrl-1 = <&cdc_pdm_lines_sus &cdc_pdm_lines_2_sus &cdc_pdm_comp_lines_sus &pri_lines_sleep &pri_ws_lines_sleep>;
 };
 
 &tlmm {
 	gpio-reserved-ranges = <0 4>, <16 4>, <135 4>;
 
-	pmx_mdss_default: pmx-mdss-default-pins {
+	pmx_mdss_default: pmx-mdss-default-state {
 		pins = "gpio61";
 		function = "gpio";
 		drive-strength = <8>;
@@ -279,35 +466,61 @@
 		output-high;
 	};
 
-	pmx_mdss_sleep: pmx-mdss-sleep-pins {
+	pmx_mdss_sleep: pmx-mdss-sleep-state {
 		pins = "gpio61";
 		function = "gpio";
 		drive-strength = <2>;
 		bias-pull-down;
 	};
 
-	ts_reset_active: ts-reset-active-pins {
+	pri_lines_default: pri-lines-default-state {
+		pins = "gpio88", "gpio91", "gpio93";
+		function = "pri_mi2s";
+		drive-strength = <8>;
+	};
+
+	pri_lines_sleep: pri-lines-sleep-state {
+		pins = "gpio88", "gpio91", "gpio93";
+		function = "pri_mi2s";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
+
+	pri_ws_lines_default: pri-ws-default-state {
+		pins = "gpio92";
+		function = "pri_mi2s_ws";
+		drive-strength = <8>;
+	};
+
+	pri_ws_lines_sleep: pri-ws-sleep-state {
+		pins = "gpio92";
+		function = "pri_mi2s_ws";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
+
+	ts_reset_active: ts-reset-active-state {
 		pins = "gpio64";
 		function = "gpio";
 		drive-strength = <8>;
 		bias-pull-up;
 	};
 
-	ts_reset_suspend: ts-reset-suspend-pins {
+	ts_reset_suspend: ts-reset-suspend-state {
 		pins = "gpio64";
 		function = "gpio";
 		drive-strength = <2>;
 		bias-pull-up;
 	};
 
-	ts_int_active: ts-int-active-pins {
+	ts_int_active: ts-int-active-state {
 		pins = "gpio65";
 		function = "gpio";
 		drive-strength = <8>;
 		bias-pull-up;
 	};
 
-	ts_int_suspend: ts-int-suspend-pins {
+	ts_int_suspend: ts-int-suspend-state {
 		pins = "gpio65";
 		function = "gpio";
 		drive-strength = <2>;
@@ -316,9 +529,10 @@
 };
 
 &uart_0 {
-	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart_console_active>;
+
+	status = "okay";
 };
 
 &usb3 {
@@ -327,4 +541,18 @@
 
 &usb3_dwc3 {
 	dr_mode = "peripheral";
+};
+
+&wcd_codec {
+	qcom,gnd-jack-type-normally-open;
+	qcom,hphl-jack-type-normally-open;
+	qcom,mbhc-vthreshold-high = <75 150 237 450 500>;
+	qcom,mbhc-vthreshold-low = <75 150 237 450 500>;
+	qcom,micbias1-ext-cap;
+
+	vdd-cdc-io-supply = <&pm8953_l5>;
+	vdd-cdc-tx-rx-cx-supply = <&pm8953_s4>;
+	vdd-micbias-supply = <&pm8953_l13>;
+
+	status = "okay";
 };
