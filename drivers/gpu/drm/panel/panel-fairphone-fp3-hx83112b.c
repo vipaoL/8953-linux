@@ -321,6 +321,9 @@ static int himax_hx83112b_bl_update_status(struct backlight_device *bl)
 
 	dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
 
+	/* Panel needs the high and low bytes swapped for brightness value */
+	brightness = __swab16(brightness);
+
 	ret = mipi_dsi_dcs_set_display_brightness(dsi, brightness);
 	if (ret < 0)
 		return ret;
