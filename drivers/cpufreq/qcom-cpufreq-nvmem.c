@@ -317,8 +317,9 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
 	if (!np)
 		return -ENOENT;
 
-	ret = of_device_is_compatible(np, "operating-points-v2-kryo-cpu");
-	if (!ret) {
+
+	if (!of_device_is_compatible(np, "operating-points-v2-kryo-cpu") &&
+	    !of_device_is_compatible(np, "operating-points-v2-qcom-cpu")) {
 		of_node_put(np);
 		return -ENOENT;
 	}
