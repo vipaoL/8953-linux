@@ -141,6 +141,7 @@ static void psci_cpuidle_domain_sync_state(struct device *dev)
 
 static const struct of_device_id psci_of_match[] = {
 	{ .compatible = "arm,psci-1.0" },
+	{ .compatible = "qcom,psci-1.0" },
 	{}
 };
 
@@ -154,8 +155,11 @@ static int psci_cpuidle_domain_probe(struct platform_device *pdev)
 	if (!np)
 		return -ENODEV;
 
-	/* If OSI mode is supported, let's try to enable it. */
-	use_osi = psci_pd_try_set_osi_mode();
+	/* If OSI mode is supported, let's try to enable it.
+	 * Skip for Qcom SoCs
+	 */
+	if (of_device_is_compatible(node, "qcom,psci-1.0"))
+		use_osi = psci_pd_try_set_osi_mode();
 
 	/*
 	 * Parse child nodes for the "#power-domain-cells" property and

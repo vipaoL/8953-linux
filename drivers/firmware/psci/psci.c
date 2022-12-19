@@ -709,6 +709,10 @@ static int __init psci_1_0_init(const struct device_node *np)
 	if (err)
 		return err;
 
+	/* Skip OSI mode init for qcom SoCs */
+	if (of_device_is_compatible(np, "qcom,psci-1.0"))
+		return 0;
+
 	if (psci_has_osi_support()) {
 		pr_info("OSI mode supported.\n");
 
@@ -723,6 +727,7 @@ static const struct of_device_id psci_of_match[] __initconst = {
 	{ .compatible = "arm,psci",	.data = psci_0_1_init},
 	{ .compatible = "arm,psci-0.2",	.data = psci_0_2_init},
 	{ .compatible = "arm,psci-1.0",	.data = psci_1_0_init},
+	{ .compatible = "qcom,psci-1.0",	.data = psci_1_0_init},
 	{},
 };
 
