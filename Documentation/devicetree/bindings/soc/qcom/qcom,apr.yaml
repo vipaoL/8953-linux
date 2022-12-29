@@ -142,7 +142,7 @@ patternProperties:
 
       qcom,protection-domain:
         $ref: /schemas/types.yaml#/definitions/string-array
-        description: protection domain service name and path for apr service
+        description: protection domain service name and path for apr service (if supported).
           possible values are
           "avs/audio", "msm/adsp/audio_pd".
           "kernel/elf_loader", "msm/modem/wlan_pd".
