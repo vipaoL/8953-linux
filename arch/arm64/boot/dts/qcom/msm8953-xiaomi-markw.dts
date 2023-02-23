@@ -11,20 +11,22 @@
  */
 /dts-v1/;
 
-#include "msm8953-pm8953.dtsi"
+#include "msm8953.dtsi"
+#include "pm8953.dtsi"
 #include "pmi8950.dtsi"
 
-#include <dt-bindings/leds/common.h>
 
 / {
-	model = "Xiaomi Redmi 4 Pro";
+	model = "Xiaomi Redmi 4 Prime";
 	compatible = "xiaomi,markw", "qcom,msm8953";
 	chassis-type = "handset";
-	/*qcom,msm-id = <293 0>;
-	qcom,board-id = <11 0>;*/
+	qcom,msm-id = <293 0>;
+	qcom,board-id= <0x1000b 1>;
+
+	aliases {
+	};
 
 	chosen {
-		stdout-path = "serial0";
 	};
 };
 
