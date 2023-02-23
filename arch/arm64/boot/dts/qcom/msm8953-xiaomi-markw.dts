@@ -18,7 +18,7 @@
 
 / {
 	model = "Xiaomi Redmi 4 Prime";
-	compatible = "xiaomi,markw", "qcom,msm8953";
+	compatible = "xiaomi,markw", "qcom,msm8953-markw", "qcom,msm8953-xiaomi", "qcom,msm8953";
 	chassis-type = "handset";
 	qcom,msm-id = <293 0>;
 	qcom,board-id= <0x1000b 1>;
