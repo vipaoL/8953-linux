@@ -32,7 +32,7 @@
 
 		framebuffer0: framebuffer@90001000 {
 			compatible = "simple-framebuffer";
-			reg = <0 0x90001000 0 (1920 * 1080 * 3)>;
+			reg = <0 0x90001000 0 0x13ff000>;
 
 			width = <1080>;
 			height = <1920>;
@@ -51,6 +51,19 @@
 		};
 	};
 
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio_key_default>;
+
+		key-volume-up {
+			label = "volume_up";
+			linux,code = <KEY_VOLUMEUP>;
+			gpios = <&tlmm 85 GPIO_ACTIVE_LOW>;
+		};
+	};
+
 	reserved-memory {
 		/delete-node/memory@85b00000;
 
@@ -60,7 +73,7 @@
 		};
 
 		memory@90001000 {
-			reg = <0x0 0x90001000 0x0 (1080 * 1920 * 3)>;
+			reg = <0x0 0x90001000 0x0 0x13ff000>;
 			no-map;
 		};
 
@@ -125,21 +138,7 @@
 };
 
 &i2c_3 {
-	status = "okay";
-
-	touchscreen@38 {
-		compatible = "edt,edt-ft5406", "edt,edt-ft5x06";
-		reg = <0x38>;
-		vcc-supply = <&pm8953_l10>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&ts_int_active &ts_reset_active>;
-		interrupt-parent = <&tlmm>;
-		interrupts = <65 IRQ_TYPE_EDGE_FALLING>;
-		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
-		touchscreen-size-x = <1080>;
-		touchscreen-size-y = <1920>;
-	};
-	
+	status = "okay";	
 	
 	touch@4a {
 		compatible = "atmel,maxtouch";
@@ -210,21 +209,23 @@
 };
 
 &dsi0 {
+	vdda-supply = <&pm8953_s3>;
+	vddio-supply = <&pm8953_l6>;
+
 	panel: panel@0 {
-		compatible = "xiaomi,nt35596-ebbg";
+		compatible = "xiaomi,markw-panel";
 		reg = <0>;
 
 		backlight = <&pmi8950_wled>;
-
-		supply-names = "vsp", "vsn";
-		vsp-supply = <&lab_vreg>;
-		vsn-supply = <&ibb_vreg>;
 
 		reset-gpios = <&tlmm 61 GPIO_ACTIVE_LOW>;
 
 		pinctrl-names = "default", "sleep";
 		pinctrl-0 = <&pmx_mdss_default &mdss_te_default>;
 		pinctrl-1 = <&pmx_mdss_sleep &mdss_te_default>;
+
+		vsp-supply = <&lab_vreg>;
+		vsn-supply = <&ibb_vreg>;
 
 		port {
 			panel_in: endpoint {
@@ -334,6 +335,8 @@
 	vddrfa-supply = <&pm8953_l19>;
 	vddpa-supply = <&pm8953_l9>;
 	vdddig-supply = <&pm8953_l5>;
+
+	status = "okay";
 };
 
 &lpass {
@@ -353,9 +356,8 @@
 };
 
 &pronto {
-	status = "okay";
-
 	vddpx-supply = <&pm8953_l5>;
+	status = "okay";
 };
 
 &tlmm {
