@@ -99,9 +99,8 @@
 	/* Don't copy-paste! See pmi8950.dtsi */
 
 	qcom,current-limit-microamp = <20000>;
-	qcom,enabled-strings = <0 1>;
 	qcom,num-strings = <2>;
-	qcom,ovp-millivolt = <29500>;
+	qcom,ovp-millivolt = <29600>;
 };
 
 &i2c_2 {
@@ -241,6 +240,7 @@
 };
 
 &dsi_phy0 {
+	vddio-supply = <&pm8953_l6>;
 	vcca-supply = <&pm8953_l3>;
 };
 
