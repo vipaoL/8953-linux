@@ -32,7 +32,7 @@
 
 		framebuffer0: framebuffer@90001000 {
 			compatible = "simple-framebuffer";
-			reg = <0 0x90001000 0 0x13ff000>;
+			reg = <0 0x90001000 0 (1920 * 1080 * 3)>;
 
 			width = <1080>;
 			height = <1920>;
@@ -142,10 +142,14 @@
 	touch@4a {
 		compatible = "atmel,maxtouch";
 		reg = <0x4a>;
-		pinctrl-names = "default";
+		vdd-supply = <&pm8953_l10>;
+		vcc_i2c-supply = <&pm8953_l5>;
+		pinctrl-names = "pmx_ts_active","pmx_ts_suspend";
 		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
 		interrupt-parent = <&tlmm>;
-		interrupts = <65 IRQ_TYPE_LEVEL_LOW>;
+		interrupts = <65 0x2008>;
+		atmel,irqflags = <0x2008>;
 		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
 	};
 		
@@ -356,8 +360,8 @@
 };
 
 &pronto {
-	vddpx-supply = <&pm8953_l5>;
 	status = "okay";
+	vddpx-supply = <&pm8953_l5>;
 };
 
 &tlmm {
@@ -441,13 +445,13 @@
 		};
 
 		pm8953_s4: s4 {
-			regulator-min-microvolt = <1896000>;
-			regulator-max-microvolt = <2048000>;
+			regulator-min-microvolt = <1900000>;
+			regulator-max-microvolt = <2050000>;
 		};
 
 		pm8953_l1: l1 {
 			regulator-min-microvolt = <1000000>;
-			regulator-max-microvolt = <1100000>;
+			regulator-max-microvolt = <1000000>;
 		};
 
 		pm8953_l2: l2 {
