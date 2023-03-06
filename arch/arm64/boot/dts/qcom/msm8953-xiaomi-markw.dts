@@ -165,6 +165,25 @@
 		atmel,irqflags = <0x2008>;
 		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
 	};
+
+	touchscreen@38 {
+		compatible = "edt,edt-ft5406", "edt,edt-ft5x06";
+		reg = <0x38>;
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <65 0x2008>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&ts_int_active>;
+
+		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
+
+		vcc-supply = <&pm8953_l10>;
+		vcc_i2c-supply = <&pm8953_l5>;
+
+		touchscreen-size-x = <720>;
+		touchscreen-size-y = <1280>;
+	};
 		
 };
 
