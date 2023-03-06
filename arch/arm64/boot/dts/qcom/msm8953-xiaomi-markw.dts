@@ -25,6 +25,13 @@
 	qcom,msm-id = <293 0>;
 	qcom,board-id = <11 0>;
 
+	battery: battery {
+		compatible = "simple-battery";
+		charge-full-design-microamp-hours = <4000000>;
+		voltage-min-design-microvolt = <3400000>;
+		voltage-max-design-microvolt = <4380000>;
+	};
+
 	chosen {
 		#address-cells = <2>;
 		#size-cells = <2>;
@@ -72,8 +79,9 @@
 			no-map;
 		};
 
-		memory@90001000 {
-			reg = <0x0 0x90001000 0x0 0x13ff000>;
+		/delete-node/memory@90001000;
+		cont_splash_mem: cont-splash@90001000 {
+			reg = <0 0x90001000 0 (1080 * 1920 * 3)>;
 			no-map;
 		};
 
@@ -91,6 +99,11 @@
 		aw8738,mode = <5>;
 		sound-name-prefix = "Speaker Amp";
 	};
+};
+
+&cpr {
+	vdd-apc-supply = <&vreg_apc>;
+	vdd-apc-step-uv = <5000>;
 };
 
 &pmi8950_wled {
@@ -357,6 +370,19 @@
 &pm8953_resin {
 	status = "okay";
 	linux,code = <KEY_VOLUMEDOWN>;
+};
+
+&pmi8950_fg {
+	monitored-battery = <&battery>;
+	power-supplies = <&pmi8950_smbcharger>;
+
+	status = "okay";
+};
+
+&pmi8950_smbcharger {
+	monitored-battery = <&battery>;
+
+	status = "okay";
 };
 
 &pronto {
