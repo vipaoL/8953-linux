@@ -16,9 +16,7 @@
 #include "pmi8950.dtsi"
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/gpio/gpio.h>
-
-/delete-node/ &adsp_fw_mem;
-/delete-node/ &wcnss_fw_mem;
+#include <dt-bindings/input/atmel-maxtouch.h>
 
 
 / {
@@ -66,7 +64,15 @@
 		compatible = "gpio-keys";
 
 		pinctrl-names = "default";
-		pinctrl-0 = <&gpio_key_default>;
+		pinctrl-0 = <&gpio_key_default>, <&gpio_hall_sensor_default>;
+
+		event-hall-sensor {
+			label = "Hall Effect Sensor";
+			gpios = <&tlmm 44 GPIO_ACTIVE_LOW>;
+			linux,input-type = <EV_SW>;
+			linux,code = <SW_LID>;
+			linux,can-disable;
+		};
 
 		key-volume-up {
 			label = "volume_up";
@@ -75,28 +81,25 @@
 		};
 	};
 
+    vph_pwr: vph-pwr-regulator {
+        compatible = "regulator-fixed";
+        regulator-name = "vph_pwr";
+        regulator-always-on;
+        regulator-boot-on;
+    };
+
 	reserved-memory {
 		/delete-node/memory@85b00000;
 
 		/delete-node/memory@90001000;
 		cont_splash_mem: cont-splash@90001000 {
-			reg = <0 0x90001000 0 (1080 * 1920 * 3)>;
+			reg = <0 0x90001000 0 0x13ff000>;
 			no-map;
 		};
 
 		/delete-node/memory@85b00000;
 		qseecom_mem: qseecom@84a00000 {
 			reg = <0x0 0x84a00000 0x0 0x1900000>;
-			no-map;
-		};
-
-		adsp_fw_mem: adsp@8d600000 {
-			reg = <0x0 0x8d600000 0x0 0x1200000>;
-			no-map;
-		};
-
-		wcnss_fw_mem: wcnss@8e800000 {
-			reg = <0x0 0x8e800000 0x0 0x700000>;
 			no-map;
 		};
 
@@ -110,6 +113,40 @@
 		};
 	};
 
+	sensors: i2c-gpio {
+		compatible = "i2c-gpio";
+		sda-gpios = <&tlmm 14 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN)>;
+		scl-gpios = <&tlmm 15 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN)>;
+		i2c-gpio,delay-us = <2>;        /* ~100 kHz */
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		imu@68 {
+			compatible = "bosch,bmi120";
+			reg = <0x68>;
+
+			vdd-supply = <&pm8953_l10>;
+			vddio-supply = <&pm8953_l6>;
+
+			mount-matrix = "0", "-1", "0",
+					"-1", "0", "0",
+					"0", "0", "1";
+		};
+		light@23 {
+		    compatible = "liteon,ltr559";
+		    reg = <0x23>;
+
+		    vdd-supply = <&pm8953_l17>;
+		    vddio-supply = <&pm8953_l6>;
+		};
+		magnetometer@2e {
+		    compatible = "yamaha,yas537";
+		    reg = <0x2e>;
+
+			vdd-supply = <&pm8953_l6>;
+		};
+	};
+
 	speaker_amp: audio-amplifier {
 		compatible = "awinic,aw8738";
 
@@ -119,92 +156,7 @@
 	};
 };
 
-&cpr {
-	vdd-apc-supply = <&vreg_apc>;
-	vdd-apc-step-uv = <5000>;
-};
-
-&pmi8950_wled {
-	status = "okay";
-
-	/* Don't copy-paste! See pmi8950.dtsi */
-
-	qcom,current-limit-microamp = <20000>;
-	qcom,num-strings = <2>;
-	qcom,ovp-millivolt = <29600>;
-};
-
-&i2c_2 {
-	status = "okay";
-	led-controller@45 {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		compatible = "awinic,aw2013";
-
-		reg = <0x45>;
-
-		vcc-supply = <&pm8953_l10>;
-
-		led@0 {
-			reg = <0>;
-			led-max-microamp = <5000>;
-			function = LED_FUNCTION_INDICATOR;
-			color = <LED_COLOR_ID_RED>;
-		};
-		led@1 {
-			reg = <1>;
-			led-max-microamp = <5000>;
-			function = LED_FUNCTION_INDICATOR;
-			color = <LED_COLOR_ID_GREEN>;
-		};
-		led@2 {
-			reg = <2>;
-			led-max-microamp = <5000>;
-			function = LED_FUNCTION_INDICATOR;
-			color = <LED_COLOR_ID_BLUE>;
-		};
-	};
-};
-
-&i2c_3 {
-	status = "okay";	
-	
-	touch@4a {
-		compatible = "atmel,maxtouch";
-		reg = <0x4a>;
-		vdd-supply = <&pm8953_l10>;
-		vcc_i2c-supply = <&pm8953_l5>;
-		pinctrl-names = "pmx_ts_active","pmx_ts_suspend";
-		pinctrl-0 = <&ts_int_active &ts_reset_active>;
-		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
-		interrupt-parent = <&tlmm>;
-		interrupts = <65 0x2008>;
-		atmel,irqflags = <0x2008>;
-		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
-	};
-
-	touchscreen@38 {
-		compatible = "edt,edt-ft5406", "edt,edt-ft5x06";
-		reg = <0x38>;
-
-		interrupt-parent = <&tlmm>;
-		interrupts = <65 0x2008>;
-
-		pinctrl-names = "default";
-		pinctrl-0 = <&ts_int_active>;
-
-		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
-
-		vcc-supply = <&pm8953_l10>;
-		vcc_i2c-supply = <&pm8953_l5>;
-
-		touchscreen-size-x = <720>;
-		touchscreen-size-y = <1280>;
-	};
-		
-};
-
+// TODO. (Just copied from mido for now)
 &camss {
 	status = "okay";
 	compatible = "qcom,msm8953-camss";
@@ -261,6 +213,12 @@
 	};
 };
 
+&cpr {
+	vdd-apc-supply = <&vreg_apc>;
+	vdd-apc-step-uv = <5000>;
+};
+
+
 &dsi0 {
 	vdda-supply = <&pm8953_s3>;
 	vddio-supply = <&pm8953_l6>;
@@ -298,83 +256,6 @@
 	vcca-supply = <&pm8953_l3>;
 };
 
-
-&sdhc_1 {
-	status = "okay";
-
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&sdc1_clk_on &sdc1_cmd_on &sdc1_data_on  &sdc1_rclk_on>;
-	pinctrl-1 = <&sdc1_clk_off &sdc1_cmd_off &sdc1_data_off &sdc1_rclk_off>;
-};
-
-&sdhc_2 {
-	status = "okay";
-
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
-	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
-
-	cd-gpios = <&tlmm 133 GPIO_ACTIVE_LOW>;
-};
-
-&wcd_codec {
-	qcom,micbias1-ext-cap;
-	qcom,hphl-jack-type-normally-open;
-	qcom,mbhc-vthreshold-low = <75 150 237 450 500>;
-	qcom,mbhc-vthreshold-high = <75 150 237 450 500>;
-};
-
-&sound_card {
-	status = "okay";
-
-	model = "xiaomi-mido";
-
-	aux-devs = <&speaker_amp>;
-
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act &cdc_pdm_comp_lines_act>;
-	pinctrl-1 = <&cdc_pdm_lines_sus &cdc_pdm_lines_2_sus &cdc_pdm_comp_lines_act>;
-
-	/delete-property/ audio-routing;
-	audio-routing =
-		"Speaker Amp IN", "LINEOUT_OUT",
-		"AMIC1", "MIC BIAS External1",
-		"AMIC2", "MIC BIAS Internal2",
-		"AMIC3", "MIC BIAS External1",
-		"MM_DL1", "MultiMedia1 Playback",
-		"MM_DL3", "MultiMedia3 Playback",
-		"MM_DL4", "MultiMedia4 Playback",
-		"MultiMedia2 Capture", "MM_UL2";
-};
-
-&usb3 {
-	status = "okay";
-};
-
-&usb3_dwc3 {
-	dr_mode = "peripheral";
-};
-
-&sdhc_1 {
-	status = "okay";
-
-	vmmc-supply = <&pm8953_l8>;
-	vqmmc-supply = <&pm8953_l5>;
-};
-
-&sdhc_2 {
-	status = "okay";
-
-	//cd-gpios = <&tlmm 133 GPIO_ACTIVE_LOW>;
-
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
-	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
-
-	vmmc-supply = <&pm8953_l11>;
-	vqmmc-supply = <&pm8953_l12>;
-};
-
 &hsusb_phy {
 	status = "okay";
 
@@ -383,6 +264,73 @@
 	vdda-phy-dpdm-supply = <&pm8953_l13>;
 };
 
+
+&i2c_2 {
+	status = "okay";
+	led-controller@45 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		compatible = "awinic,aw2013";
+
+		reg = <0x45>;
+
+		vcc-supply = <&pm8953_l10>;
+
+		led@0 {
+			reg = <0>;
+			led-max-microamp = <5000>;
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_RED>;
+		};
+		led@1 {
+			reg = <1>;
+			led-max-microamp = <5000>;
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_GREEN>;
+		};
+		led@2 {
+			reg = <2>;
+			led-max-microamp = <5000>;
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_BLUE>;
+		};
+	};
+};
+
+&i2c_3 {
+	status = "okay";	
+	
+	touchscreen@38 {
+		compatible = "edt,edt-ft5336", "edt,edt-ft5306";
+		reg = <0x38>;
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <65 0x2008>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&ts_int_active>;
+
+		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
+
+		vcc-supply = <&pm8953_l10>;
+		vcc_i2c-supply = <&pm8953_l5>;
+
+		touchscreen-size-x = <720>;
+		touchscreen-size-y = <1280>;
+	};
+
+    touchscreen@4a {
+        compatible = "atmel,maxtouch";
+        reg = <0x4a>;
+        interrupt-parent = <&tlmm>;
+        interrupts = <65 IRQ_TYPE_EDGE_FALLING>;
+        reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
+        vdda-supply = <&pm8953_l5>;
+        vdd-supply = <&pm8953_l10>;
+        atmel,wakeup-method = <ATMEL_MXT_WAKEUP_I2C_SCL>;
+    };
+};
 
 &iris {
 	vddxo-supply = <&pm8953_l7>;
@@ -422,14 +370,72 @@
 	status = "okay";
 };
 
+&pmi8950_wled {
+	status = "okay";
+
+	/* Don't copy-paste! See pmi8950.dtsi */
+
+	qcom,current-limit-microamp = <20000>;
+	qcom,num-strings = <2>;
+	qcom,ovp-millivolt = <29600>;
+};
+
 &pronto {
 	status = "okay";
 	vddpx-supply = <&pm8953_l5>;
 };
 
+&sdhc_1 {
+	status = "okay";
+};
+
+&sdhc_2 {
+	status = "okay";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
+	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
+
+	cd-gpios = <&tlmm 133 GPIO_ACTIVE_LOW>;
+};
+
+&sound_card {
+	status = "okay";
+
+	model = "xiaomi-markw";
+
+	aux-devs = <&speaker_amp>;
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act &cdc_pdm_comp_lines_act>;
+	pinctrl-1 = <&cdc_pdm_lines_sus &cdc_pdm_lines_2_sus &cdc_pdm_comp_lines_act>;
+};
+
+&usb3 {
+	status = "okay";
+};
+
+&usb3_dwc3 {
+	dr_mode = "peripheral";
+};
+
+&wcd_codec {
+	qcom,micbias1-ext-cap;
+	qcom,hphl-jack-type-normally-open;
+	qcom,mbhc-vthreshold-low = <75 150 237 450 500>;
+	qcom,mbhc-vthreshold-high = <75 150 237 450 500>;
+};
+
 &tlmm {
 
 	gpio-reserved-ranges = <0 4>, <135 4>;
+
+	gpio_hall_sensor_default: gpio-hall-sensor-state {
+		pins = "gpio44";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-up;
+	};
 
 	ir_led_pins: ir_led_off {
 		pins = "gpio45";
@@ -493,9 +499,21 @@
 
 
 &rpm_requests {
-	pm8953-regulators {
+	regulators {
 		compatible = "qcom,rpm-pm8953-regulators";
 		// TODO Add supplies
+        vdd_s1-supply = <&vph_pwr>;
+        vdd_s2-supply = <&vph_pwr>;
+        vdd_s3-supply = <&vph_pwr>;
+        vdd_s4-supply = <&vph_pwr>;
+        vdd_s5-supply = <&vph_pwr>;
+        vdd_s6-supply = <&vph_pwr>;
+        vdd_s7-supply = <&vph_pwr>;
+        vdd_l1-supply = <&pm8953_s3>;
+        vdd_l2_l3-supply = <&pm8953_s3>;
+        vdd_l4_l5_l6_l7_l16_l19-supply = <&pm8953_s4>;
+        vdd_l8_l11_l12_l13_l14_l15-supply = <&vph_pwr>;
+        vdd_l9_l10_l17_l18_l22-supply = <&vph_pwr>;
 
 		pm8953_s1: s1 {
 			regulator-min-microvolt = <863000>;
