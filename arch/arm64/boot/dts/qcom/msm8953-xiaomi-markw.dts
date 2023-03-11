@@ -132,6 +132,7 @@
 					"-1", "0", "0",
 					"0", "0", "1";
 		};
+
 		light@23 {
 		    compatible = "liteon,ltr559";
 		    reg = <0x23>;
@@ -139,6 +140,7 @@
 		    vdd-supply = <&pm8953_l17>;
 		    vddio-supply = <&pm8953_l6>;
 		};
+
 		magnetometer@2e {
 		    compatible = "yamaha,yas537";
 		    reg = <0x2e>;
@@ -283,12 +285,14 @@
 			function = LED_FUNCTION_INDICATOR;
 			color = <LED_COLOR_ID_RED>;
 		};
+
 		led@1 {
 			reg = <1>;
 			led-max-microamp = <5000>;
 			function = LED_FUNCTION_INDICATOR;
 			color = <LED_COLOR_ID_GREEN>;
 		};
+
 		led@2 {
 			reg = <2>;
 			led-max-microamp = <5000>;
@@ -382,6 +386,7 @@
 
 &pronto {
 	status = "okay";
+
 	vddpx-supply = <&pm8953_l5>;
 };
 
