@@ -25,3 +25,4 @@ obj-$(CONFIG_DRM_PANEL_XIAOMI_TD4310_FHDPLUS_E7) += panel-xiaomi-td4310-fhdplus-
 obj-$(CONFIG_DRM_PANEL_XIAOMI_TIANMA_NT35596) += panel-xiaomi-tianma-nt35596.o
 obj-$(CONFIG_DRM_PANEL_NT35596_EBBG) += panel-nt35596-ebbg.o
 obj-$(CONFIG_DRM_PANEL_XIAOMI_TIANMA_R63350) += panel-xiaomi-tianma-r63350.o
+obj-$(CONFIG_DRM_PANEL_R63350) += panel-r63350.o
