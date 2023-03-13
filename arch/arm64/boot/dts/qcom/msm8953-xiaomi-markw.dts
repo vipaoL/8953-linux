@@ -93,7 +93,7 @@
 
 		/delete-node/memory@90001000;
 		cont_splash_mem: cont-splash@90001000 {
-			reg = <0 0x90001000 0 0x13ff000>;
+			reg = <0 0x90001000 0 (1080 * 1920 * 3)>;
 			no-map;
 		};
 
