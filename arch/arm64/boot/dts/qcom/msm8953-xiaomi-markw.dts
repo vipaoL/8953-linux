@@ -303,22 +303,22 @@
 };
 
 &i2c_3 {
-	status = "okay";	
+	status = "okay";
 	
 	touchscreen@38 {
 		compatible = "edt,edt-ft5336", "edt,edt-ft5306";
 		reg = <0x38>;
 
 		interrupt-parent = <&tlmm>;
-		interrupts = <65 0x2008>;
+		interrupts = <65 IRQ_TYPE_EDGE_FALLING>;
 
 		pinctrl-names = "default";
-		pinctrl-0 = <&ts_int_active>;
+		pinctrl-0 = <&ts_int_default>;
 
 		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
 
 		vcc-supply = <&pm8953_l10>;
-		vddio-supply = <&pm8953_l5>;
+		iovcc-supply = <&pm8953_l5>;
 
 		touchscreen-size-x = <1080>;
 		touchscreen-size-y = <1920>;
@@ -476,6 +476,12 @@
 		pins = "gpio65";
 		function = "gpio";
 		drive-strength = <8>;
+		bias-pull-up;
+	};
+	ts_int_default: ts-int-default-state {
+		pins = "gpio65";
+		function = "gpio";
+		drive-strength = <2>;
 		bias-pull-up;
 	};
 
