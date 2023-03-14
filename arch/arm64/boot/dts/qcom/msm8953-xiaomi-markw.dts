@@ -306,7 +306,7 @@
 	status = "okay";	
 	
 	touchscreen@38 {
-		compatible = "edt,edt-ft5336", "edt,edt-ft5306", "edt,edt-ft5346";
+		compatible = "edt,edt-ft5336", "edt,edt-ft5x06", "edt,edt-ft5346";
 		reg = <0x38>;
 
 		interrupt-parent = <&tlmm>;
