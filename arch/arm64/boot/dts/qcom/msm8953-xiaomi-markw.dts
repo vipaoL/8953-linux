@@ -306,7 +306,7 @@
 	status = "okay";	
 	
 	touchscreen@38 {
-		compatible = "edt,edt-ft5336", "edt,edt-ft5x06", "edt,edt-ft5346";
+		compatible = "edt,edt-ft5336", "edt,edt-ft5306";
 		reg = <0x38>;
 
 		interrupt-parent = <&tlmm>;
@@ -318,10 +318,10 @@
 		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
 
 		vcc-supply = <&pm8953_l10>;
-		vcc_i2c-supply = <&pm8953_l5>;
+		vddio-supply = <&pm8953_l5>;
 
-		touchscreen-size-x = <720>;
-		touchscreen-size-y = <1280>;
+		touchscreen-size-x = <1080>;
+		touchscreen-size-y = <1920>;
 	};
 
     touchscreen@4a {
