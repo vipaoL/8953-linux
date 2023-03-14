@@ -212,7 +212,7 @@ static int r63350_probe(struct mipi_dsi_device *dsi)
 	dsi->lanes = 4;
 	dsi->format = MIPI_DSI_FMT_RGB888;
 	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
-			  MIPI_DSI_MODE_VIDEO_HSE | MIPI_DSI_MODE_EOT_PACKET |
+			  MIPI_DSI_MODE_VIDEO_HSE | MIPI_DSI_MODE_NO_EOT_PACKET |
 			  MIPI_DSI_CLOCK_NON_CONTINUOUS;
 
 	drm_panel_init(&ctx->panel, dev, &r63350_panel_funcs,
@@ -233,7 +233,7 @@ static int r63350_probe(struct mipi_dsi_device *dsi)
 	return 0;
 }
 
-static int r63350_remove(struct mipi_dsi_device *dsi)
+static void r63350_remove(struct mipi_dsi_device *dsi)
 {
 	struct r63350 *ctx = mipi_dsi_get_drvdata(dsi);
 	int ret;
@@ -243,8 +243,6 @@ static int r63350_remove(struct mipi_dsi_device *dsi)
 		dev_err(&dsi->dev, "Failed to detach from DSI host: %d\n", ret);
 
 	drm_panel_remove(&ctx->panel);
-
-	return 0;
 }
 
 static const struct of_device_id r63350_of_match[] = {
