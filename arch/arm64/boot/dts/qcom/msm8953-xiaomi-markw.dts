@@ -121,18 +121,6 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		imu@68 {
-			compatible = "bosch,bmi120";
-			reg = <0x68>;
-
-			vdd-supply = <&pm8953_l10>;
-			vddio-supply = <&pm8953_l6>;
-
-			mount-matrix = "0", "-1", "0",
-					"-1", "0", "0",
-					"0", "0", "1";
-		};
-
 		light@23 {
 			compatible = "liteon,ltr559";
 			reg = <0x23>;
@@ -146,6 +134,18 @@
 			reg = <0x2e>;
 
 			vdd-supply = <&pm8953_l6>;
+		};
+		
+		imu@68 {
+			compatible = "bosch,bmi120";
+			reg = <0x68>;
+
+			vdd-supply = <&pm8953_l10>;
+			vddio-supply = <&pm8953_l6>;
+
+			mount-matrix = "0", "-1", "0",
+					"-1", "0", "0",
+					"0", "0", "1";
 		};
 	};
 
@@ -179,9 +179,9 @@
 &cci {
 	pinctrl-names = "default";
 	pinctrl-0 = <&cci0_default>,
-			<&cci1_default>,
-			<&camss_mclk0_default>,
-			<&camss_mclk1_default>;
+		    <&cci1_default>,
+		    <&camss_mclk0_default>,
+		    <&camss_mclk1_default>;
 
 	status = "okay";
 };
