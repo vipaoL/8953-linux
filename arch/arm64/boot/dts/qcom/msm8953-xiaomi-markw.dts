@@ -81,12 +81,12 @@
 		};
 	};
 
-    vph_pwr: vph-pwr-regulator {
-        compatible = "regulator-fixed";
-        regulator-name = "vph_pwr";
-        regulator-always-on;
-        regulator-boot-on;
-    };
+	vph_pwr: vph-pwr-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vph_pwr";
+		regulator-always-on;
+		regulator-boot-on;
+	};
 
 	reserved-memory {
 		/delete-node/memory@85b00000;
@@ -134,16 +134,16 @@
 		};
 
 		light@23 {
-		    compatible = "liteon,ltr559";
-		    reg = <0x23>;
+			compatible = "liteon,ltr559";
+			reg = <0x23>;
 
-		    vdd-supply = <&pm8953_l17>;
-		    vddio-supply = <&pm8953_l6>;
+			vdd-supply = <&pm8953_l17>;
+			vddio-supply = <&pm8953_l6>;
 		};
 
 		magnetometer@2e {
-		    compatible = "yamaha,yas537";
-		    reg = <0x2e>;
+			compatible = "yamaha,yas537";
+			reg = <0x2e>;
 
 			vdd-supply = <&pm8953_l6>;
 		};
@@ -179,9 +179,9 @@
 &cci {
 	pinctrl-names = "default";
 	pinctrl-0 = <&cci0_default>,
-		    <&cci1_default>,
-		    <&camss_mclk0_default>,
-		    <&camss_mclk1_default>;
+			<&cci1_default>,
+			<&camss_mclk0_default>,
+			<&camss_mclk1_default>;
 
 	status = "okay";
 };
@@ -324,16 +324,20 @@
 		touchscreen-size-y = <1920>;
 	};
 
-    touchscreen@4a {
-        compatible = "atmel,maxtouch";
-        reg = <0x4a>;
-        interrupt-parent = <&tlmm>;
-        interrupts = <65 IRQ_TYPE_EDGE_FALLING>;
-        reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
-        vdda-supply = <&pm8953_l5>;
-        vdd-supply = <&pm8953_l10>;
-        atmel,wakeup-method = <ATMEL_MXT_WAKEUP_I2C_SCL>;
-    };
+	touchscreen@4a {
+		compatible = "atmel,maxtouch";
+		reg = <0x4a>;
+		
+		interrupt-parent = <&tlmm>;
+		interrupts = <65 IRQ_TYPE_EDGE_FALLING>;
+		
+		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
+		
+		vdda-supply = <&pm8953_l5>;
+		vdd-supply = <&pm8953_l10>;
+		
+		atmel,wakeup-method = <ATMEL_MXT_WAKEUP_I2C_SCL>;
+	};
 };
 
 &iris {
@@ -458,38 +462,11 @@
 		bias-disable;
 	};
 
-
-	ts_reset_active: ts-reset-active-pins {
-		pins = "gpio64";
-		function = "gpio";
-		drive-strength = <8>;
-		bias-pull-up;
-	};
-
-	ts_reset_suspend: ts-reset-suspend-pins {
-		pins = "gpio64";
-		function = "gpio";
-		drive-strength = <2>;
-		bias-pull-up;
-	};
-	ts_int_active: ts-int-active-pins {
-		pins = "gpio65";
-		function = "gpio";
-		drive-strength = <8>;
-		bias-pull-up;
-	};
 	ts_int_default: ts-int-default-state {
 		pins = "gpio65";
 		function = "gpio";
 		drive-strength = <2>;
 		bias-pull-up;
-	};
-
-	ts_int_suspend: ts-int-suspend-pins {
-		pins = "gpio65";
-		function = "gpio";
-		drive-strength = <2>;
-		bias-pull-down;
 	};
 
 	pmx_mdss_default: pmx-mdss-default-pins {
@@ -512,19 +489,18 @@
 &rpm_requests {
 	regulators {
 		compatible = "qcom,rpm-pm8953-regulators";
-		// TODO Add supplies
-        vdd_s1-supply = <&vph_pwr>;
-        vdd_s2-supply = <&vph_pwr>;
-        vdd_s3-supply = <&vph_pwr>;
-        vdd_s4-supply = <&vph_pwr>;
-        vdd_s5-supply = <&vph_pwr>;
-        vdd_s6-supply = <&vph_pwr>;
-        vdd_s7-supply = <&vph_pwr>;
-        vdd_l1-supply = <&pm8953_s3>;
-        vdd_l2_l3-supply = <&pm8953_s3>;
-        vdd_l4_l5_l6_l7_l16_l19-supply = <&pm8953_s4>;
-        vdd_l8_l11_l12_l13_l14_l15-supply = <&vph_pwr>;
-        vdd_l9_l10_l17_l18_l22-supply = <&vph_pwr>;
+		vdd_s1-supply = <&vph_pwr>;
+		vdd_s2-supply = <&vph_pwr>;
+		vdd_s3-supply = <&vph_pwr>;
+		vdd_s4-supply = <&vph_pwr>;
+		vdd_s5-supply = <&vph_pwr>;
+		vdd_s6-supply = <&vph_pwr>;
+		vdd_s7-supply = <&vph_pwr>;
+		vdd_l1-supply = <&pm8953_s3>;
+		vdd_l2_l3-supply = <&pm8953_s3>;
+		vdd_l4_l5_l6_l7_l16_l19-supply = <&pm8953_s4>;
+		vdd_l8_l11_l12_l13_l14_l15-supply = <&vph_pwr>;
+		vdd_l9_l10_l17_l18_l22-supply = <&vph_pwr>;
 
 		pm8953_s1: s1 {
 			regulator-min-microvolt = <863000>;
