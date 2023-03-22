@@ -375,6 +375,10 @@
 	status = "okay";
 };
 
+&pmi8950_labibb {
+	status = "disabled";
+};
+
 &pmi8950_smbcharger {
 	monitored-battery = <&battery>;
 
