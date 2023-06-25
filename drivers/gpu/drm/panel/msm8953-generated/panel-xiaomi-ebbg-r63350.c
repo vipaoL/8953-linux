@@ -28,22 +28,6 @@ static inline struct r63350_ebbg *to_r63350_ebbg(struct drm_panel *panel)
 	return container_of(panel, struct r63350_ebbg, panel);
 }
 
-#define dsi_generic_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_generic_write(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
-#define dsi_dcs_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_dcs_write_buffer(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
 static void r63350_ebbg_reset(struct r63350_ebbg *ctx)
 {
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
@@ -62,7 +46,7 @@ static int r63350_ebbg_on(struct r63350_ebbg *ctx)
 
 	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 
-	dsi_generic_write_seq(dsi, 0xb0, 0x04);
+	mipi_dsi_generic_write_seq(dsi, 0xb0, 0x04);
 
 	ret = mipi_dsi_dcs_set_display_brightness(dsi, 0x00ff);
 	if (ret < 0) {
@@ -70,11 +54,11 @@ static int r63350_ebbg_on(struct r63350_ebbg *ctx)
 		return ret;
 	}
 
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x2c);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x00);
-	dsi_dcs_write_seq(dsi, 0x29, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x2c);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x29, 0x00);
 	usleep_range(10000, 11000);
-	dsi_dcs_write_seq(dsi, 0x11, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x11, 0x00);
 	msleep(120);
 
 	return 0;

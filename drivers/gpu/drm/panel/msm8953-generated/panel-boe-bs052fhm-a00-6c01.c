@@ -28,14 +28,6 @@ static inline struct boe_520_v0 *to_boe_520_v0(struct drm_panel *panel)
 	return container_of(panel, struct boe_520_v0, panel);
 }
 
-#define dsi_dcs_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_dcs_write_buffer(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
 static void boe_520_v0_reset(struct boe_520_v0 *ctx)
 {
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
@@ -56,42 +48,42 @@ static int boe_520_v0_on(struct boe_520_v0 *ctx)
 	struct device *dev = &dsi->dev;
 	int ret;
 
-	dsi_dcs_write_seq(dsi, 0xff, 0xee);
-	dsi_dcs_write_seq(dsi, 0x18, 0x40);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0xee);
+	mipi_dsi_dcs_write_seq(dsi, 0x18, 0x40);
 	usleep_range(10000, 11000);
-	dsi_dcs_write_seq(dsi, 0x18, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x18, 0x00);
 	msleep(20);
-	dsi_dcs_write_seq(dsi, 0xff, 0x01);
-	dsi_dcs_write_seq(dsi, 0xfb, 0x01);
-	dsi_dcs_write_seq(dsi, 0x60, 0x0f);
-	dsi_dcs_write_seq(dsi, 0x6d, 0x33);
-	dsi_dcs_write_seq(dsi, 0x58, 0x82);
-	dsi_dcs_write_seq(dsi, 0x59, 0x00);
-	dsi_dcs_write_seq(dsi, 0x5a, 0x02);
-	dsi_dcs_write_seq(dsi, 0x5b, 0x00);
-	dsi_dcs_write_seq(dsi, 0x5c, 0x82);
-	dsi_dcs_write_seq(dsi, 0x5d, 0x80);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_SET_CABC_MIN_BRIGHTNESS, 0x02);
-	dsi_dcs_write_seq(dsi, 0x5f, 0x00);
-	dsi_dcs_write_seq(dsi, 0x1b, 0x1b);
-	dsi_dcs_write_seq(dsi, 0x1c, 0xf7);
-	dsi_dcs_write_seq(dsi, 0x66, 0x01);
-	dsi_dcs_write_seq(dsi, 0xff, 0x05);
-	dsi_dcs_write_seq(dsi, 0xfb, 0x01);
-	dsi_dcs_write_seq(dsi, 0xa6, 0x04);
-	dsi_dcs_write_seq(dsi, 0xff, 0xff);
-	dsi_dcs_write_seq(dsi, 0xfb, 0x01);
-	dsi_dcs_write_seq(dsi, 0x4f, 0x03);
-	dsi_dcs_write_seq(dsi, 0xff, 0x05);
-	dsi_dcs_write_seq(dsi, 0xfb, 0x01);
-	dsi_dcs_write_seq(dsi, 0x86, 0x1b);
-	dsi_dcs_write_seq(dsi, 0x87, 0x39);
-	dsi_dcs_write_seq(dsi, 0x88, 0x1b);
-	dsi_dcs_write_seq(dsi, 0x89, 0x39);
-	dsi_dcs_write_seq(dsi, 0x8c, 0x01);
-	dsi_dcs_write_seq(dsi, 0xb5, 0x20);
-	dsi_dcs_write_seq(dsi, 0xff, 0x00);
-	dsi_dcs_write_seq(dsi, 0xfb, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0xfb, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0x60, 0x0f);
+	mipi_dsi_dcs_write_seq(dsi, 0x6d, 0x33);
+	mipi_dsi_dcs_write_seq(dsi, 0x58, 0x82);
+	mipi_dsi_dcs_write_seq(dsi, 0x59, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x5a, 0x02);
+	mipi_dsi_dcs_write_seq(dsi, 0x5b, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x5c, 0x82);
+	mipi_dsi_dcs_write_seq(dsi, 0x5d, 0x80);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_SET_CABC_MIN_BRIGHTNESS, 0x02);
+	mipi_dsi_dcs_write_seq(dsi, 0x5f, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x1b, 0x1b);
+	mipi_dsi_dcs_write_seq(dsi, 0x1c, 0xf7);
+	mipi_dsi_dcs_write_seq(dsi, 0x66, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x05);
+	mipi_dsi_dcs_write_seq(dsi, 0xfb, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0xa6, 0x04);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0xff);
+	mipi_dsi_dcs_write_seq(dsi, 0xfb, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0x4f, 0x03);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x05);
+	mipi_dsi_dcs_write_seq(dsi, 0xfb, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0x86, 0x1b);
+	mipi_dsi_dcs_write_seq(dsi, 0x87, 0x39);
+	mipi_dsi_dcs_write_seq(dsi, 0x88, 0x1b);
+	mipi_dsi_dcs_write_seq(dsi, 0x89, 0x39);
+	mipi_dsi_dcs_write_seq(dsi, 0x8c, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0xb5, 0x20);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xfb, 0x01);
 
 	ret = mipi_dsi_dcs_set_display_brightness(dsi, 0x00cc);
 	if (ret < 0) {
@@ -99,12 +91,12 @@ static int boe_520_v0_on(struct boe_520_v0 *ctx)
 		return ret;
 	}
 
-	dsi_dcs_write_seq(dsi, MIPI_DCS_SET_CABC_MIN_BRIGHTNESS, 0x00);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x2c);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x01);
-	dsi_dcs_write_seq(dsi, 0x34, 0x00);
-	dsi_dcs_write_seq(dsi, 0xd3, 0x06);
-	dsi_dcs_write_seq(dsi, 0xd4, 0x04);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_SET_CABC_MIN_BRIGHTNESS, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x2c);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0x34, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xd3, 0x06);
+	mipi_dsi_dcs_write_seq(dsi, 0xd4, 0x04);
 
 	ret = mipi_dsi_dcs_exit_sleep_mode(dsi);
 	if (ret < 0) {
@@ -113,12 +105,12 @@ static int boe_520_v0_on(struct boe_520_v0 *ctx)
 	}
 	msleep(120);
 
-	dsi_dcs_write_seq(dsi, 0xff, 0x01);
-	dsi_dcs_write_seq(dsi, 0xfb, 0x01);
-	dsi_dcs_write_seq(dsi, 0x0e, 0xb0);
-	dsi_dcs_write_seq(dsi, 0x0f, 0xa9);
-	dsi_dcs_write_seq(dsi, 0xff, 0x00);
-	dsi_dcs_write_seq(dsi, 0xfb, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0xfb, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0x0e, 0xb0);
+	mipi_dsi_dcs_write_seq(dsi, 0x0f, 0xa9);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xfb, 0x01);
 
 	ret = mipi_dsi_dcs_set_display_on(dsi);
 	if (ret < 0) {

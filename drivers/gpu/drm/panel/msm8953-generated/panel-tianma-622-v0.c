@@ -28,14 +28,6 @@ static inline struct tianma_622_v0 *to_tianma_622_v0(struct drm_panel *panel)
 	return container_of(panel, struct tianma_622_v0, panel);
 }
 
-#define dsi_dcs_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_dcs_write_buffer(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
 static void tianma_622_v0_reset(struct tianma_622_v0 *ctx)
 {
 	gpiod_set_value_cansleep(ctx->reset_gpio, 1);
@@ -50,7 +42,7 @@ static int tianma_622_v0_on(struct tianma_622_v0 *ctx)
 	struct device *dev = &dsi->dev;
 	int ret;
 
-	dsi_dcs_write_seq(dsi, 0xff, 0x98, 0x81, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x98, 0x81, 0x00);
 
 	ret = mipi_dsi_dcs_set_display_brightness(dsi, 0xcc0c);
 	if (ret < 0) {
@@ -58,8 +50,8 @@ static int tianma_622_v0_on(struct tianma_622_v0 *ctx)
 		return ret;
 	}
 
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x24);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x24);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x01);
 
 	ret = mipi_dsi_dcs_exit_sleep_mode(dsi);
 	if (ret < 0) {
@@ -74,13 +66,13 @@ static int tianma_622_v0_on(struct tianma_622_v0 *ctx)
 		return ret;
 	}
 
-	dsi_dcs_write_seq(dsi, 0xff, 0x98, 0x81, 0x03);
-	dsi_dcs_write_seq(dsi, 0x83, 0x20);
-	dsi_dcs_write_seq(dsi, 0x84, 0x02);
-	dsi_dcs_write_seq(dsi, 0xbc, 0x08);
-	dsi_dcs_write_seq(dsi, 0xff, 0x98, 0x81, 0x06);
-	dsi_dcs_write_seq(dsi, 0x06, 0xc4);
-	dsi_dcs_write_seq(dsi, 0xff, 0x98, 0x81, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x98, 0x81, 0x03);
+	mipi_dsi_dcs_write_seq(dsi, 0x83, 0x20);
+	mipi_dsi_dcs_write_seq(dsi, 0x84, 0x02);
+	mipi_dsi_dcs_write_seq(dsi, 0xbc, 0x08);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x98, 0x81, 0x06);
+	mipi_dsi_dcs_write_seq(dsi, 0x06, 0xc4);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x98, 0x81, 0x00);
 
 	return 0;
 }

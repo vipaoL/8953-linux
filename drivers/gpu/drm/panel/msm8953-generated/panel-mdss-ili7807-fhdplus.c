@@ -28,14 +28,6 @@ static inline struct ili7807plus *to_ili7807plus(struct drm_panel *panel)
 	return container_of(panel, struct ili7807plus, panel);
 }
 
-#define dsi_dcs_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_dcs_write_buffer(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
 static void ili7807plus_reset(struct ili7807plus *ctx)
 {
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
@@ -52,19 +44,19 @@ static int ili7807plus_on(struct ili7807plus *ctx)
 	struct device *dev = &dsi->dev;
 	int ret;
 
-	dsi_dcs_write_seq(dsi, 0xff, 0x78, 0x07, 0x00);
-	dsi_dcs_write_seq(dsi, 0x11, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x78, 0x07, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x11, 0x00);
 	msleep(120);
-	dsi_dcs_write_seq(dsi, 0xff, 0x78, 0x07, 0x07);
-	dsi_dcs_write_seq(dsi, 0x12, 0x22);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_SET_PARTIAL_COLUMNS, 0x0f);
-	dsi_dcs_write_seq(dsi, 0x44, 0x07);
-	dsi_dcs_write_seq(dsi, 0x46, 0x01);
-	dsi_dcs_write_seq(dsi, 0xff, 0x78, 0x07, 0x05);
-	dsi_dcs_write_seq(dsi, 0x00, 0x25);
-	dsi_dcs_write_seq(dsi, 0x03, 0x40);
-	dsi_dcs_write_seq(dsi, 0x04, 0x00);
-	dsi_dcs_write_seq(dsi, 0xff, 0x78, 0x07, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x78, 0x07, 0x07);
+	mipi_dsi_dcs_write_seq(dsi, 0x12, 0x22);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_SET_PARTIAL_COLUMNS, 0x0f);
+	mipi_dsi_dcs_write_seq(dsi, 0x44, 0x07);
+	mipi_dsi_dcs_write_seq(dsi, 0x46, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x78, 0x07, 0x05);
+	mipi_dsi_dcs_write_seq(dsi, 0x00, 0x25);
+	mipi_dsi_dcs_write_seq(dsi, 0x03, 0x40);
+	mipi_dsi_dcs_write_seq(dsi, 0x04, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x78, 0x07, 0x00);
 
 	ret = mipi_dsi_dcs_set_display_brightness(dsi, 0xfc0f);
 	if (ret < 0) {
@@ -72,8 +64,8 @@ static int ili7807plus_on(struct ili7807plus *ctx)
 		return ret;
 	}
 
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x2c);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x2c);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x00);
 
 	ret = mipi_dsi_dcs_set_tear_on(dsi, MIPI_DSI_DCS_TEAR_MODE_VBLANK);
 	if (ret < 0) {
@@ -81,7 +73,7 @@ static int ili7807plus_on(struct ili7807plus *ctx)
 		return ret;
 	}
 
-	dsi_dcs_write_seq(dsi, 0x29, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x29, 0x00);
 	msleep(20);
 
 	return 0;
@@ -91,10 +83,10 @@ static int ili7807plus_off(struct ili7807plus *ctx)
 {
 	struct mipi_dsi_device *dsi = ctx->dsi;
 
-	dsi_dcs_write_seq(dsi, 0xff, 0x78, 0x07, 0x00);
-	dsi_dcs_write_seq(dsi, 0x28, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xff, 0x78, 0x07, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x28, 0x00);
 	msleep(20);
-	dsi_dcs_write_seq(dsi, 0x10, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x10, 0x00);
 	msleep(120);
 
 	return 0;

@@ -26,14 +26,6 @@ static inline struct nt35532 *to_nt35532(struct drm_panel *panel)
 	return container_of(panel, struct nt35532, panel);
 }
 
-#define dsi_generic_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_generic_write(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
 static void nt35532_reset(struct nt35532 *ctx)
 {
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
@@ -50,25 +42,25 @@ static int nt35532_on(struct nt35532 *ctx)
 
 	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 
-	dsi_generic_write_seq(dsi, 0xff, 0x04);
+	mipi_dsi_generic_write_seq(dsi, 0xff, 0x04);
 	usleep_range(1000, 2000);
-	dsi_generic_write_seq(dsi, 0xfb, 0x01);
-	dsi_generic_write_seq(dsi, 0x08, 0x05);
-	dsi_generic_write_seq(dsi, 0xff, 0x05);
+	mipi_dsi_generic_write_seq(dsi, 0xfb, 0x01);
+	mipi_dsi_generic_write_seq(dsi, 0x08, 0x05);
+	mipi_dsi_generic_write_seq(dsi, 0xff, 0x05);
 	usleep_range(1000, 2000);
-	dsi_generic_write_seq(dsi, 0xfb, 0x01);
-	dsi_generic_write_seq(dsi, 0xd6, 0x22);
-	dsi_generic_write_seq(dsi, 0xff, 0x00);
-	dsi_generic_write_seq(dsi, 0xfb, 0x01);
-	dsi_generic_write_seq(dsi, 0x35, 0x00);
-	dsi_generic_write_seq(dsi, 0x51, 0xff);
-	dsi_generic_write_seq(dsi, 0x53, 0x2c);
-	dsi_generic_write_seq(dsi, 0x55, 0x00);
-	dsi_generic_write_seq(dsi, 0xd3, 0x0e);
-	dsi_generic_write_seq(dsi, 0xd4, 0x07);
-	dsi_generic_write_seq(dsi, 0x11, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0xfb, 0x01);
+	mipi_dsi_generic_write_seq(dsi, 0xd6, 0x22);
+	mipi_dsi_generic_write_seq(dsi, 0xff, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0xfb, 0x01);
+	mipi_dsi_generic_write_seq(dsi, 0x35, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0x51, 0xff);
+	mipi_dsi_generic_write_seq(dsi, 0x53, 0x2c);
+	mipi_dsi_generic_write_seq(dsi, 0x55, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0xd3, 0x0e);
+	mipi_dsi_generic_write_seq(dsi, 0xd4, 0x07);
+	mipi_dsi_generic_write_seq(dsi, 0x11, 0x00);
 	msleep(120);
-	dsi_generic_write_seq(dsi, 0x29, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0x29, 0x00);
 	msleep(20);
 
 	return 0;
@@ -82,7 +74,7 @@ static int nt35532_off(struct nt35532 *ctx)
 
 	dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
 
-	dsi_generic_write_seq(dsi, 0xff, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0xff, 0x00);
 
 	ret = mipi_dsi_dcs_set_display_off(dsi);
 	if (ret < 0) {
@@ -98,8 +90,8 @@ static int nt35532_off(struct nt35532 *ctx)
 	}
 	msleep(60);
 
-	dsi_generic_write_seq(dsi, 0xff, 0x00);
-	dsi_generic_write_seq(dsi, 0x4f, 0x01);
+	mipi_dsi_generic_write_seq(dsi, 0xff, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0x4f, 0x01);
 	msleep(20);
 
 	return 0;

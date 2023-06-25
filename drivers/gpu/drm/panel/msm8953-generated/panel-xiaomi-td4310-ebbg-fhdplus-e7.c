@@ -29,22 +29,6 @@ struct td4310_ebbgplus_e7 *to_td4310_ebbgplus_e7(struct drm_panel *panel)
 	return container_of(panel, struct td4310_ebbgplus_e7, panel);
 }
 
-#define dsi_generic_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_generic_write(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
-#define dsi_dcs_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_dcs_write_buffer(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
 static void td4310_ebbgplus_e7_reset(struct td4310_ebbgplus_e7 *ctx)
 {
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
@@ -63,20 +47,21 @@ static int td4310_ebbgplus_e7_on(struct td4310_ebbgplus_e7 *ctx)
 
 	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 
-	dsi_dcs_write_seq(dsi, 0x11, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x11, 0x00);
 	msleep(120);
-	dsi_generic_write_seq(dsi, 0xb0, 0x04);
-	dsi_generic_write_seq(dsi, 0xd6, 0x01);
-	dsi_generic_write_seq(dsi, 0xc7,
-			      0x00, 0x10, 0x1c, 0x2c, 0x3a, 0x45, 0x5d, 0x6f,
-			      0x7d, 0x8a, 0x3e, 0x4b, 0x5b, 0x71, 0x7b, 0x88,
-			      0x98, 0xa5, 0xb1, 0x00, 0x10, 0x1c, 0x2c, 0x3a,
-			      0x45, 0x5d, 0x6f, 0x7d, 0x8a, 0x3e, 0x4b, 0x5b,
-			      0x71, 0x7b, 0x88, 0x98, 0xa5, 0xb1);
-	dsi_generic_write_seq(dsi, 0xc8,
-			      0x01, 0x00, 0x03, 0x01, 0x03, 0xfc, 0x00, 0x00,
-			      0x03, 0xfe, 0xfe, 0xfc, 0x00, 0x00, 0x01, 0xfe,
-			      0xfb, 0xfc, 0x00, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0xb0, 0x04);
+	mipi_dsi_generic_write_seq(dsi, 0xd6, 0x01);
+	mipi_dsi_generic_write_seq(dsi, 0xc7,
+				   0x00, 0x10, 0x1c, 0x2c, 0x3a, 0x45, 0x5d,
+				   0x6f, 0x7d, 0x8a, 0x3e, 0x4b, 0x5b, 0x71,
+				   0x7b, 0x88, 0x98, 0xa5, 0xb1, 0x00, 0x10,
+				   0x1c, 0x2c, 0x3a, 0x45, 0x5d, 0x6f, 0x7d,
+				   0x8a, 0x3e, 0x4b, 0x5b, 0x71, 0x7b, 0x88,
+				   0x98, 0xa5, 0xb1);
+	mipi_dsi_generic_write_seq(dsi, 0xc8,
+				   0x01, 0x00, 0x03, 0x01, 0x03, 0xfc, 0x00,
+				   0x00, 0x03, 0xfe, 0xfe, 0xfc, 0x00, 0x00,
+				   0x01, 0xfe, 0xfb, 0xfc, 0x00, 0x00);
 
 	ret = mipi_dsi_dcs_set_display_brightness(dsi, 0x00ff);
 	if (ret < 0) {
@@ -84,8 +69,8 @@ static int td4310_ebbgplus_e7_on(struct td4310_ebbgplus_e7 *ctx)
 		return ret;
 	}
 
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x24);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x24);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x00);
 
 	ret = mipi_dsi_dcs_set_tear_on(dsi, MIPI_DSI_DCS_TEAR_MODE_VBLANK);
 	if (ret < 0) {
@@ -93,7 +78,7 @@ static int td4310_ebbgplus_e7_on(struct td4310_ebbgplus_e7 *ctx)
 		return ret;
 	}
 
-	dsi_dcs_write_seq(dsi, 0x29, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x29, 0x00);
 	msleep(20);
 
 	return 0;
@@ -105,9 +90,9 @@ static int td4310_ebbgplus_e7_off(struct td4310_ebbgplus_e7 *ctx)
 
 	dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
 
-	dsi_dcs_write_seq(dsi, 0x28, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x28, 0x00);
 	msleep(20);
-	dsi_dcs_write_seq(dsi, 0x10, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x10, 0x00);
 	msleep(120);
 
 	return 0;

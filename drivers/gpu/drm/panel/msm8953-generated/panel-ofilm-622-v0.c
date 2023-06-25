@@ -26,14 +26,6 @@ static inline struct ofilm_622_v0 *to_ofilm_622_v0(struct drm_panel *panel)
 	return container_of(panel, struct ofilm_622_v0, panel);
 }
 
-#define dsi_dcs_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_dcs_write_buffer(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
 static void ofilm_622_v0_reset(struct ofilm_622_v0 *ctx)
 {
 	gpiod_set_value_cansleep(ctx->reset_gpio, 1);
@@ -55,11 +47,11 @@ static int ofilm_622_v0_on(struct ofilm_622_v0 *ctx)
 	}
 	msleep(120);
 
-	dsi_dcs_write_seq(dsi, 0x50, 0x5a, 0x23);
-	dsi_dcs_write_seq(dsi, 0x90, 0xcc, 0x0c);
-	dsi_dcs_write_seq(dsi, 0x94, 0x2c, 0x01);
-	dsi_dcs_write_seq(dsi, 0x50, 0x5a, 0x2f);
-	dsi_dcs_write_seq(dsi, 0x50, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x50, 0x5a, 0x23);
+	mipi_dsi_dcs_write_seq(dsi, 0x90, 0xcc, 0x0c);
+	mipi_dsi_dcs_write_seq(dsi, 0x94, 0x2c, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, 0x50, 0x5a, 0x2f);
+	mipi_dsi_dcs_write_seq(dsi, 0x50, 0x00);
 
 	ret = mipi_dsi_dcs_set_display_on(dsi);
 	if (ret < 0) {
@@ -91,8 +83,8 @@ static int ofilm_622_v0_off(struct ofilm_622_v0 *ctx)
 	}
 	msleep(20);
 
-	dsi_dcs_write_seq(dsi, 0x04, 0x5a);
-	dsi_dcs_write_seq(dsi, 0x05, 0x5a);
+	mipi_dsi_dcs_write_seq(dsi, 0x04, 0x5a);
+	mipi_dsi_dcs_write_seq(dsi, 0x05, 0x5a);
 	msleep(150);
 
 	return 0;

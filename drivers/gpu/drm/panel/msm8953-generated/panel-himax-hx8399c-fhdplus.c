@@ -28,14 +28,6 @@ static inline struct hx8399cplus *to_hx8399cplus(struct drm_panel *panel)
 	return container_of(panel, struct hx8399cplus, panel);
 }
 
-#define dsi_dcs_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_dcs_write_buffer(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
 static void hx8399cplus_reset(struct hx8399cplus *ctx)
 {
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
@@ -52,10 +44,10 @@ static int hx8399cplus_on(struct hx8399cplus *ctx)
 	struct device *dev = &dsi->dev;
 	int ret;
 
-	dsi_dcs_write_seq(dsi, 0xb9, 0xff, 0x83, 0x99);
-	dsi_dcs_write_seq(dsi, 0x11, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xb9, 0xff, 0x83, 0x99);
+	mipi_dsi_dcs_write_seq(dsi, 0x11, 0x00);
 	msleep(120);
-	dsi_dcs_write_seq(dsi, 0x29, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x29, 0x00);
 	msleep(20);
 
 	ret = mipi_dsi_dcs_set_display_brightness(dsi, 0xff0f);
@@ -65,15 +57,17 @@ static int hx8399cplus_on(struct hx8399cplus *ctx)
 	}
 	usleep_range(1000, 2000);
 
-	dsi_dcs_write_seq(dsi, 0xc9,
-			  0x03, 0x00, 0x16, 0x1e, 0x31, 0x1e, 0x00, 0x91, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0xc9,
+			       0x03, 0x00, 0x16, 0x1e, 0x31, 0x1e, 0x00, 0x91,
+			       0x00);
 	usleep_range(1000, 2000);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_POWER_SAVE, 0x01);
 	usleep_range(5000, 6000);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x2c);
+	mipi_dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x2c);
 	usleep_range(1000, 2000);
-	dsi_dcs_write_seq(dsi, 0xca,
-			  0x24, 0x23, 0x23, 0x21, 0x23, 0x21, 0x20, 0x20, 0x20);
+	mipi_dsi_dcs_write_seq(dsi, 0xca,
+			       0x24, 0x23, 0x23, 0x21, 0x23, 0x21, 0x20, 0x20,
+			       0x20);
 	usleep_range(1000, 2000);
 
 	return 0;
@@ -83,9 +77,9 @@ static int hx8399cplus_off(struct hx8399cplus *ctx)
 {
 	struct mipi_dsi_device *dsi = ctx->dsi;
 
-	dsi_dcs_write_seq(dsi, 0x28, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x28, 0x00);
 	msleep(50);
-	dsi_dcs_write_seq(dsi, 0x10, 0x00);
+	mipi_dsi_dcs_write_seq(dsi, 0x10, 0x00);
 	msleep(120);
 
 	return 0;

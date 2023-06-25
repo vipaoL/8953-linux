@@ -26,14 +26,6 @@ static inline struct ili9885_boe *to_ili9885_boe(struct drm_panel *panel)
 	return container_of(panel, struct ili9885_boe, panel);
 }
 
-#define dsi_generic_write_seq(dsi, seq...) do {				\
-		static const u8 d[] = { seq };				\
-		int ret;						\
-		ret = mipi_dsi_generic_write(dsi, d, ARRAY_SIZE(d));	\
-		if (ret < 0)						\
-			return ret;					\
-	} while (0)
-
 static void ili9885_boe_reset(struct ili9885_boe *ctx)
 {
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
@@ -50,13 +42,13 @@ static int ili9885_boe_on(struct ili9885_boe *ctx)
 
 	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 
-	dsi_generic_write_seq(dsi, 0x35, 0x00);
-	dsi_generic_write_seq(dsi, 0x51, 0x0f, 0xff);
-	dsi_generic_write_seq(dsi, 0x53, 0x2c);
-	dsi_generic_write_seq(dsi, 0x55, 0x00);
-	dsi_generic_write_seq(dsi, 0x11, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0x35, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0x51, 0x0f, 0xff);
+	mipi_dsi_generic_write_seq(dsi, 0x53, 0x2c);
+	mipi_dsi_generic_write_seq(dsi, 0x55, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0x11, 0x00);
 	msleep(120);
-	dsi_generic_write_seq(dsi, 0x29, 0x00);
+	mipi_dsi_generic_write_seq(dsi, 0x29, 0x00);
 	usleep_range(5000, 6000);
 
 	return 0;
