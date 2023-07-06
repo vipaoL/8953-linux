@@ -201,22 +201,11 @@
 	assigned-clock-rates = <691200000>;
 };
 
-&gpu_opp_table {
-	opp-685000000 {
-		opp-hz = /bits/ 64 <685000000>;
-		opp-supported-hw = <BIN_ALL>;
-		opp-avg-kBps = <0>, <(7449600/4)>;
-		opp-peak-kBps = <7449600>, <(7449600/2)>;
-		required-opps = <&rpmpd_opp_turbo>;
-	};
-
-	opp-725000000 {
-		opp-hz = /bits/ 64 <725000000>;
-		opp-supported-hw = <BIN_ALL>;
-		opp-avg-kBps = <0>, <(7449600/4)>;
-		opp-peak-kBps = <7449600>, <(7449600/2)>;
-		required-opps = <&rpmpd_opp_turbo>;
-	};
+&gpu {
+	/* SDM632 supports all operating points on all bins */
+	/delete-property/ nvmem-cells;
+	/delete-property/ nvmem-cell-names;
+	opp-default-hw = <0x100>;
 };
 
 &CPU4 {
