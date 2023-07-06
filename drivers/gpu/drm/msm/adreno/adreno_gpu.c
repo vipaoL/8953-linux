@@ -970,8 +970,10 @@ static void adreno_get_pwrlevels(struct device *dev,
 		ret = adreno_get_legacy_pwrlevels(dev);
 	else {
 		ret = devm_pm_opp_of_add_table(dev);
-		if (ret)
+		if (ret) {
 			DRM_DEV_ERROR(dev, "Unable to set the OPP table\n");
+			gpu->use_opp = false;
+		}
 	}
 
 	if (!ret) {

@@ -242,6 +242,7 @@ struct msm_gpu {
 	int nr_clocks;
 	struct clk *ebi1_clk, *core_clk, *rbbmtimer_clk;
 	uint32_t fast_rate;
+	bool use_opp;
 
 	/* Hang and Inactivity Detection:
 	 */
