@@ -1036,7 +1036,7 @@ static struct i2c_driver sr556_i2c_driver = {
 		.pm = &sr556_pm_ops,
 		.of_match_table	= of_match_ptr(sr556_of_match),
 	},
-	.probe_new = sr556_probe,
+	.probe = sr556_probe,
 	.remove = sr556_remove,
 };
 
