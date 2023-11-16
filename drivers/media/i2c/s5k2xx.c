@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
 // Copyright (c) 2019 Intel Corporation.
-
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/gpio/consumer.h>
@@ -1463,7 +1462,7 @@ static struct i2c_driver s5k2xx_i2c_driver = {
 		.pm = &s5k2xx_pm_ops,
 		.of_match_table	= of_match_ptr(s5k2xx_of_match),
 	},
-	.probe_new = s5k2xx_probe,
+	.probe = s5k2xx_probe,
 	.remove = s5k2xx_remove,
 };
 
