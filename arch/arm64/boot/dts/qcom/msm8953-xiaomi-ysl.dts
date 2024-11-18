@@ -200,6 +200,15 @@
 	regulator-min-microvolt = <2800000>;
 };
 
+&pmi8950_haptics {
+	qcom,actuator-type = <HAP_TYPE_ERM>;
+	qcom,brake-pattern = <0x3 0x3 0x0 0x0>;
+	qcom,wave-play-rate-us = <4165>;
+	qcom,wave-shape = <HAP_WAVE_SQUARE>;
+
+	status = "okay";
+};
+
 &sdhc_2 {
 	cd-gpios = <&tlmm 133 GPIO_ACTIVE_HIGH>;
 };
