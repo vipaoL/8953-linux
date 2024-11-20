@@ -347,7 +347,7 @@ static int msm8953_clkdbg_msm8953_probe(struct platform_device *pdev)
 	return ret;
 }
 
-static int msm8953_clkdbg_msm8953_remove(struct platform_device *pdev)
+static void msm8953_clkdbg_msm8953_remove(struct platform_device *pdev)
 {
 	if (!IS_ERR_OR_NULL(rootdir)) {
 		debugfs_remove_recursive(rootdir);
@@ -358,8 +358,6 @@ static int msm8953_clkdbg_msm8953_remove(struct platform_device *pdev)
 		iounmap(gcc_base);
 		gcc_base = NULL;
 	}
-
-	return 0;
 }
 
 static struct platform_device *msm8953_clkdbg_pdev;
