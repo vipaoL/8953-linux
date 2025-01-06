@@ -193,36 +193,20 @@
 			};
 		};
 
+		pmi8950_flash: led-controller@d300 {
+			compatible = "qcom,spmi-flash-led-v1";
+			reg = <0xd300 0x100>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			status = "disabled";
+		};
+
 		pmi8950_pwm: pwm {
 			compatible = "qcom,pmi8950-pwm";
 			#pwm-cells = <2>;
 
 			status = "disabled";
-		};
-
-		pmi8950_flash: led-controller@d300 {
-			compatible = "qcom,spmi-flash-led-v1";
-			reg = <0xd300 0x100>;
-			status = "disabled";
-
-			#address-cells = <1>;
-			#size-cells = <0>;
-
-			led@0 {
-				reg = <0>;
-				function = LED_FUNCTION_FLASH;
-				color = <LED_COLOR_ID_WHITE>;
-				default-state = "off";
-				status = "disabled";
-			};
-
-			led@1 {
-				reg = <1>;
-				function = LED_FUNCTION_FLASH;
-				color = <LED_COLOR_ID_WHITE>;
-				default-state = "off";
-				status = "disabled";
-			};
 		};
 
 		pmi8950_haptics: haptics@c000 {
