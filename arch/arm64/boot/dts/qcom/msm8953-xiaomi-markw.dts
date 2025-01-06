@@ -3,6 +3,7 @@
 
 #include "msm8953-xiaomi-common.dtsi"
 #include <dt-bindings/input/atmel-maxtouch.h>
+#include <dt-bindings/leds/common.h>
 
 /delete-node/ &qseecom_mem;
 
@@ -273,6 +274,28 @@
 
 &panel {
 	compatible = "xiaomi,markw-panel";
+};
+
+&pmi8950_flash {
+	status = "okay";
+
+	led@0 {
+		reg = <0>;
+		function = LED_FUNCTION_FLASH;
+		color = <LED_COLOR_ID_WHITE>;
+		led-max-microamp = <200000>;
+		flash-max-microamp = <1000000>;
+		flash-max-timeout-us = <1280000>;
+	};
+
+	led@1 {
+		reg = <1>;
+		function = LED_FUNCTION_FLASH;
+		color = <LED_COLOR_ID_YELLOW>;
+		led-max-microamp = <200000>;
+		flash-max-microamp = <1000000>;
+		flash-max-timeout-us = <1280000>;
+	};
 };
 
 &pm8953_l2 {
