@@ -138,6 +138,7 @@
 	    regulator-always-on;
 	    enable-active-high;
 	    gpio = <&tlmm 84 GPIO_ACTIVE_HIGH>;
+	    vin-supply = <&vreg_bob>;
 	};
 
 	gpio_keys: gpio-keys {
@@ -616,8 +617,8 @@
 	ports {
 		port@3 {
 			csiphy3_ep: endpoint {
-				clock-lanes = <7>;
-				data-lanes = <0 1 2 3>;
+				clock-lanes = <3>;
+				data-lanes = <0 1>;
 				bus-type = <MEDIA_BUS_TYPE_CSI2_DPHY>;
 				remote-endpoint = <&camera_hi846_ep>;
 			};
@@ -654,7 +655,7 @@
 
 		port {
 			camera_hi846_ep: endpoint {
-				data-lanes = <1 2 3 4>;
+				data-lanes = <1 2>;
 				bus-type = <MEDIA_BUS_TYPE_CSI2_DPHY>;
 				link-frequencies = /bits/ 64 <80000000 200000000>;
 				remote-endpoint = <&csiphy3_ep>;
