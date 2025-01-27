@@ -816,7 +816,7 @@ static int ov13b10i2c_set_stream(struct v4l2_subdev *sd, int enable)
 	return 0;
 
 error_power_off:
-	pm_runtime_put(ov13b10i2c->dev);
+	printk("ov13b10 error_power_off");
 error_unlock:
 	mutex_unlock(&ov13b10i2c->mutex);
 
@@ -1018,16 +1018,7 @@ error_reset:
  */
 static int ov13b10i2c_power_off(struct device *dev)
 {
-	struct v4l2_subdev *sd = dev_get_drvdata(dev);
-	struct ov13b10i2c *ov13b10i2c = to_ov13b10i2c(sd);
-
-	clk_disable_unprepare(ov13b10i2c->inclk);
-
-	gpiod_set_value_cansleep(ov13b10i2c->reset_gpio, 1);
-
-	regulator_bulk_disable(ARRAY_SIZE(ov13b10i2c_supply_names),
-			       ov13b10i2c->supplies);
-
+	printk("ov13b10i2c_power_off");
 	return 0;
 }
 
@@ -1203,32 +1194,20 @@ static int ov13b10i2c_probe(struct i2c_client *client)
 	return 0;
 
 error_media_entity:
-	media_entity_cleanup(&ov13b10i2c->sd.entity);
+	printk("ov13b10 error_media_entity");
 error_handler_free:
-	v4l2_ctrl_handler_free(ov13b10i2c->sd.ctrl_handler);
+	printk("ov13b10 error_handler_free");
 error_power_off:
-	ov13b10i2c_power_off(ov13b10i2c->dev);
+	printk("ov13b10 error_power_off");
 error_mutex_destroy:
-	mutex_destroy(&ov13b10i2c->mutex);
+	printk("ov13b10 error_mutex_destroy");
 
 	return ret;
 }
 
 static void ov13b10i2c_remove(struct i2c_client *client)
 {
-	struct v4l2_subdev *sd = i2c_get_clientdata(client);
-	struct ov13b10i2c *ov13b10i2c = to_ov13b10i2c(sd);
-
-	v4l2_async_unregister_subdev(sd);
-	media_entity_cleanup(&sd->entity);
-	v4l2_ctrl_handler_free(sd->ctrl_handler);
-
-	pm_runtime_disable(&client->dev);
-	if (!pm_runtime_status_suspended(&client->dev))
-		ov13b10i2c_power_off(&client->dev);
-	pm_runtime_set_suspended(&client->dev);
-
-	mutex_destroy(&ov13b10i2c->mutex);
+	printk("ov13b10 remove");
 }
 
 static const struct dev_pm_ops ov13b10i2c_pm_ops = {
