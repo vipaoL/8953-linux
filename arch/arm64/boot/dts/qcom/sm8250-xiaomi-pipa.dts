@@ -1323,6 +1323,7 @@
 			port@2 {
 				reg = <2>;
 				pm8150b_typec_sbu_out: endpoint {
+					remote-endpoint = <&fsa4480_sbu_mux>;
  				};
  			};
 		};
