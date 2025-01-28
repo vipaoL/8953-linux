@@ -27,8 +27,8 @@
 #define OV13B10I2C_REG_LPFR		0x0340
 
 /* Chip ID */
-#define OV13B10I2C_REG_ID		0x0000
-#define OV13B10I2C_ID			0x0
+#define OV13B10I2C_REG_ID		0x300B
+#define OV13B10I2C_ID			0xD42
 
 /* Exposure control */
 #define OV13B10I2C_REG_EXPOSURE_CIT	0x0202
